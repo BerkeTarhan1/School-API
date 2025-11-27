@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SchoolAPI.DTO;
 using SchoolAPI.Models;
 using SchoolAPI.Services;
@@ -7,6 +8,7 @@ namespace SchoolAPI.Controllers
 {
 	[ApiController]
 	[Route("api/[controller]")]
+	[Authorize] // Require authentication for all endpoints
 	public class StudentsController : ControllerBase
 	{
 		private readonly StudentService _studentService;
@@ -17,6 +19,7 @@ namespace SchoolAPI.Controllers
 		}
 
 		[HttpGet]
+		[AllowAnonymous] // Allow viewing students without login
 		public async Task<ActionResult<List<Student>>> Get()
 		{
 			var students = await _studentService.GetAsync();
@@ -24,6 +27,7 @@ namespace SchoolAPI.Controllers
 		}
 
 		[HttpGet("{id:length(24)}")]
+		[AllowAnonymous] // Allow viewing single student without login
 		public async Task<ActionResult<Student>> Get(string id)
 		{
 			var student = await _studentService.GetAsync(id);
@@ -37,6 +41,7 @@ namespace SchoolAPI.Controllers
 		}
 
 		[HttpPost]
+		[Authorize(Roles = "Admin")] // Only Admins can create students
 		public async Task<IActionResult> Post(CreateStudentDto createStudentDto)
 		{
 			if (string.IsNullOrWhiteSpace(createStudentDto.Name) ||
@@ -59,6 +64,7 @@ namespace SchoolAPI.Controllers
 		}
 
 		[HttpPut("{id:length(24)}")]
+		[Authorize(Roles = "Admin")] // Only Admins can update students
 		public async Task<IActionResult> Update(string id, Student updatedStudent)
 		{
 			var student = await _studentService.GetAsync(id);
@@ -75,6 +81,7 @@ namespace SchoolAPI.Controllers
 		}
 
 		[HttpDelete("{id:length(24)}")]
+		[Authorize(Roles = "Admin")] // Only Admins can delete students
 		public async Task<IActionResult> Delete(string id)
 		{
 			var student = await _studentService.GetAsync(id);
